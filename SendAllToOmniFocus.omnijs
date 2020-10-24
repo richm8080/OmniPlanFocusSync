@@ -1,0 +1,173 @@
+/*{
+	"type": "action",
+	"targets": ["omniplan"],
+	"author": "richm8080",
+	"identifier": "com.richm8080.op.sendalltoomnifocus",
+	"version": "1.0",
+	"description": "This action will create copies of all incomplete OmniPlan lowest level tasks in OmniFocus. (Groups, Milestones & Hammock tasks will not be copied)",
+	"label": "Copy All Tasks to OmniFocus",
+	"shortLabel": "Copy All to OmniFocus"
+}*/
+(() => {
+	var action = new PlugIn.Action(function(selection, sender){
+		// action code
+		// selection options: project, tasks, resources
+		
+		var now = new Date()
+		var today = Calendar.current.startOfDay(now)
+		
+		var tasksToSend = new Array()
+
+		// Build array of tasks to send to OF from the selection.
+
+		actual.rootTask.descendents().forEach(function(OPtask){
+			var OPtaskComplete = (OPtask.effortDone/OPtask.effort)==1
+			var OFtaskID = OPtask.customValue("OmniFocusID")
+			// Dont send complete tasks, and only send tasks not milestones, groups or hammock tasks
+			if(!OPtaskComplete && OPtask.type == TaskType.task && !OFtaskID)
+			{
+				var OPtaskTitle = OPtask.title
+				var OPtaskID = OPtask.uniqueID
+				var OPtaskLink = "omniplan:///task/" + OPtaskID
+				var OPtaskNote = OPtask.note
+				var OPprojectName = document.name
+				
+				if (OPtaskNote){
+					OPtaskNote = (OPtaskNote.length > 0) ? OPtaskNote + "\n" + OPtaskLink : OPtaskLink
+				} else {
+					OPtaskNote = OPtaskLink
+				}
+				var OPtaskDueDate = OPtask.endDate
+				// OPtaskDueDate = (OPtaskDueDate != null) ? OPtaskDueDate : today
+				var OPtaskDeferDate = OPtask.startNoEarlierThanDate
+
+				// CREATE TASK DATA OBJECT
+				var task = {
+					"OPtaskID": OPtaskID,
+					"OPprojectName": OPprojectName,
+					"OPtaskTitle":OPtaskTitle,
+					"OPtaskNote":OPtaskNote,
+					"OPtaskDueDate":OPtaskDueDate,
+					"OPtaskDeferDate": OPtaskDeferDate,
+					"OPcompletion":OPtaskComplete
+				}
+				tasksToSend.push(task)
+			}
+			// else
+				// console.log("OPtaskComplete: " + OPtaskComplete + " OPtask.type: " + OPtask.type + " OFtaskID: " + OFtaskID)
+		})
+		
+		// DEBUG: Log to console
+		// console.log(JSON.stringify(tasksToSend))
+		
+
+		//Function that gets sent to OF to run along with the data for it to operate on
+		function omniFocusTaskLoaderFunction(arg){
+			try {
+				var OFTaskLinks = new Array()
+				arg.forEach(task => {
+					OFtask = new Task(task["OPtaskTitle"])
+					OFtaskLink = "omnifocus:///task/" + OFtask.id.primaryKey
+					OFtaskID = OFtask.id.primaryKey
+					OFtask.note = task["OPtaskNote"]
+
+					if(task["OPtaskDueDate"])
+						OFtask.dueDate = new Date(task["OPtaskDueDate"])
+					if(task["OPtaskDeferDate"])
+						OFtask.deferDate = new Date(task["OPtaskDeferDate"])
+
+					if(task["OPcompletion"])
+						OFtask.markComplete()
+					else
+						OFtask.markIncomplete()
+
+					var tagGroup = tagNamed("OmniPlan") || new Tag("OmniPlan")
+					var tagName = task["OPprojectName"]
+					var tag = tagGroup.tagNamed(tagName) || new Tag(tagName, tagGroup.ending)
+					OFtask.addTag(tag)
+					var taskObj = {
+						"OFtaskLink": OFtaskLink,
+						"OFtaskID": OFtaskID,
+						"OPtaskID": task["OPtaskID"]
+					}
+					OFTaskLinks.push(taskObj)
+				})
+				// console.log(JSON.stringify(OFTaskLinks))
+				return JSON.stringify(OFTaskLinks)
+			}
+			catch(error){
+				console.log("An error occurred.")
+				throw error
+			}
+		}
+		
+		var scriptURL = URL.tellFunction(
+			"omnifocus", 
+			omniFocusTaskLoaderFunction, 
+			tasksToSend
+			)
+		
+		scriptURL.call(function(resultObj){
+			// PROCESS RESULTS OF SCRIPT
+			// DEBUG: Log to console
+			// console.log("omniFocusTaskLoaderFunction result: ", resultObj)
+			// console.log(resultObj)
+
+			resultArray = JSON.parse(resultObj)
+
+			// var selectedTasks = selection.tasks
+
+			resultArray.forEach((returnedTask, index) => {
+
+				//DEBUG: Log to console
+				// console.log("Index: ", index)
+				// console.log(JSON.stringify(returnedTask))
+				// for(var key in returnedTask) {
+					// console.log(key, ": ", returnedTask[key])
+				// }
+
+
+				// var OPTask = selectedTasks[index]
+
+				var allTasks = actual.rootTask.descendents()
+				var OPTask = allTasks.find(function(task){
+					return task.uniqueID === returnedTask["OPtaskID"]
+				})
+
+				if(OPTask)
+				{
+					var OPTaskNote = OPTask.note
+					var OFtaskID = returnedTask["OFtaskID"]
+					if(OFtaskID)
+						OPTask.setCustomValue("OmniFocusID", returnedTask["OFtaskID"])
+					if (OPTaskNote){
+						if(OPTaskNote.length > 0){
+							OPTask.note = OPTaskNote + "\n" + returnedTask["OFtaskLink"]
+						} else {
+							if(returnedTask["OFtaskLink"])
+								OPTask.note = returnedTask["OFtaskLink"]
+						}
+					} else {
+						if(returnedTask["OFtaskLink"])
+							OPTask.note = returnedTask["OFtaskLink"]
+					}
+				}
+				else
+					console.log("task not found")
+			})
+		}, function(err){
+			// PROCESS SCRIPT ERROR
+			new Alert("SCRIPT ERROR", err.errorMessage).show()
+			console.error(err.errorMessage)
+		})
+
+	});
+
+	action.validate = function(selection, sender){
+		// validation code
+		// selection options: project, tasks, resources
+		return (actual.rootTask.descendents().length > 0)
+	};
+	
+	return action;
+})();

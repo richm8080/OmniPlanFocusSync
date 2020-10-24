@@ -1,0 +1,138 @@
+/*{
+	"type": "action",
+	"targets": ["omniplan"],
+	"author": "richm8080",
+	"identifier": "com.richm8080.op.pullupdatesfromomnifocus",
+	"version": "1.0",
+	"description": "This action will update tasks in OmniPlan based on data from OmniFocus where the OmniFocusID is set in OmniPlan.",
+	"label": "Pull Updates from OmniFocus",
+	"shortLabel": "Update OmniPlan (pull)"
+}*/
+(() => {
+	var action = new PlugIn.Action(function(selection, sender){
+		// action code
+		
+		var tasksToSend = new Array()
+
+		// Build array of tasks to send to OF from the selection.
+		actual.rootTask.descendents().forEach(function(OPtask){
+			
+			var OFtaskID = OPtask.customValue("OmniFocusID")
+			// Only update tasks with an OFID
+			if(OFtaskID)
+			{				
+				var OPtaskID = OPtask.uniqueID
+
+				// CREATE TASK DATA OBJECT
+				var task = {
+					"OPtaskID": OPtaskID,
+					"OFtaskID": OFtaskID,
+				}
+				tasksToSend.push(task)
+			}
+		})
+		
+		// DEBUG: Log to console
+		// console.log(JSON.stringify(tasksToSend))
+
+		//Function that gets sent to OF to run along with the data for it to operate on
+		function omniFocusTaskRetrieverFunction(arg){
+			try {
+				var returnTaskData = new Array()
+
+				arg.forEach(task => {
+
+					var OFtask = Task.byIdentifier(task["OFtaskID"])
+					if(OFtask)
+					{
+						var OFTaskExists = true
+						var OFTaskCompleted = OFtask.completed
+					}
+					else
+					{
+						var OFTaskExists = false
+						var OFTaskCompleted = null
+					}
+					var returnTask = {
+							"OPtaskID": task["OPtaskID"],
+							"OFtaskID": task["OFtaskID"],
+							"OFTaskExists": OFTaskExists,
+							"OFTaskCompleted": OFTaskCompleted
+						}
+						returnTaskData.push(returnTask)
+				})
+				//DEBUG log to console
+				// console.log(JSON.stringify(returnTaskData))
+				return JSON.stringify(returnTaskData)
+			}
+			catch(error){
+				console.log("An error occurred.")
+				throw error
+			}
+		}
+		
+		var scriptURL = URL.tellFunction(
+			"omnifocus", 
+			omniFocusTaskRetrieverFunction, 
+			tasksToSend
+			)
+		
+		scriptURL.call(function(resultObj){
+			// PROCESS RESULTS OF SCRIPT
+			// DEBUG: Log to console
+			// console.log("omniFocusTaskRetrieverFunction result: ", resultObj)
+			// console.log(resultObj)
+
+			resultArray = JSON.parse(resultObj)
+
+			resultArray.forEach((returnedTask, index) => {
+
+				//DEBUG: Log to console
+				// console.log("Index: ", index)
+				// console.log(JSON.stringify(returnedTask))
+				for(var key in returnedTask) {
+					console.log(key, ": ", returnedTask[key])
+				}
+
+				var allTasks = actual.rootTask.descendents()
+				var OPTask = allTasks.find(function(task){
+					return task.uniqueID === returnedTask["OPtaskID"]
+				})
+
+				if(OPTask)
+				{
+					if(!returnedTask["OFTaskExists"])
+					{
+						if(OPTask.customValue("OmniFocusID") == returnedTask["OFtaskID"])
+							OPTask.setCustomValue("OmniFocusID", "")
+					}
+					else
+					{
+						if(returnedTask['OFTaskCompleted'])
+						{
+							OPTask.effortDone = OPTask.effort
+						}
+						else
+						{
+							OPTask.effortDone = 0
+						}
+					}
+				}
+				else
+					console.log("task not found")
+			})
+		}, function(err){
+			// PROCESS SCRIPT ERROR
+			new Alert("SCRIPT ERROR", err.errorMessage).show()
+			console.error(err.errorMessage)
+		})
+
+	});
+
+	action.validate = function(selection, sender){
+		// validation code
+		return (actual.rootTask.descendents().length > 0)
+	};
+	
+	return action;
+})();

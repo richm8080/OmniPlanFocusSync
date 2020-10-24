@@ -1,0 +1,145 @@
+/*{
+	"type": "action",
+	"targets": ["omniplan"],
+	"author": "richm8080",
+	"identifier": "com.richm8080.op.pushupdatestoomnifocus",
+	"version": "1.0",
+	"description": "This action will update tasks in OmniFocus based on data from OmniPlan where the OmniFocusID is set in OmniPlan.",
+	"label": "Push Updates to OmniFocus",
+	"shortLabel": "Update OmniFocus (push)"
+}*/
+(() => {
+	var action = new PlugIn.Action(function(selection, sender){
+		// action code
+		
+		var now = new Date()
+		var today = Calendar.current.startOfDay(now)
+		
+		var tasksToSend = new Array()
+
+		// Build array of tasks to send to OF from the selection.
+
+		actual.rootTask.descendents().forEach(function(OPtask){
+			
+			var OFtaskID = OPtask.customValue("OmniFocusID")
+			// Only update tasks with an OFID
+			if(OFtaskID)
+			{
+				var OPtaskComplete = (OPtask.effortDone/OPtask.effort)==1
+				var OPtaskTitle = OPtask.title
+				var OPtaskID = OPtask.uniqueID
+				var OPtaskDueDate = OPtask.endDate
+				var OPtaskDeferDate = OPtask.startNoEarlierThanDate
+
+				// CREATE TASK DATA OBJECT
+				var task = {
+					"OPtaskID": OPtaskID,
+					"OFtaskID": OFtaskID,
+					"OPtaskTitle":OPtaskTitle,
+					"OPtaskDueDate":OPtaskDueDate,
+					"OPtaskDeferDate": OPtaskDeferDate,
+					"OPcompletion":OPtaskComplete
+				}
+				tasksToSend.push(task)
+			}
+		})
+		
+		// DEBUG: Log to console
+		// console.log(JSON.stringify(tasksToSend))
+		
+
+		//Function that gets sent to OF to run along with the data for it to operate on
+		function omniFocusTaskLoaderFunction(arg){
+			try {
+				var missingTasks = new Array()
+
+				arg.forEach(task => {
+
+					var OFtask = Task.byIdentifier(task["OFtaskID"])
+					if(OFtask)
+					{
+						OFtask.title = task["OPtaskTitle"]
+						if(task["OPtaskDueDate"])
+							OFtask.dueDate = new Date(task["OPtaskDueDate"])
+						if(task["OPtaskDeferDate"])
+							OFtask.deferDate = new Date(task["OPtaskDeferDate"])
+
+						if(task["OPcompletion"])
+							OFtask.markComplete()
+						else
+							OFtask.markIncomplete()
+					}
+					else
+					{
+						var missingTask = {
+							"OPtaskID": task["OPtaskID"],
+							"OFtaskID": task["OFtaskID"]
+						}
+						missingTasks.push(missingTask)
+					}					
+				})
+				// DEBUG log to console
+				// console.log(JSON.stringify(missingTasks))
+				return JSON.stringify(missingTasks)
+			}
+			catch(error){
+				console.log("An error occurred.")
+				throw error
+			}
+		}
+		
+
+
+		var scriptURL = URL.tellFunction(
+			"omnifocus", 
+			omniFocusTaskLoaderFunction, 
+			tasksToSend
+			)
+		
+		scriptURL.call(function(resultObj){
+			// PROCESS RESULTS OF SCRIPT
+			// DEBUG: Log to console
+			// console.log("omniFocusTaskLoaderFunction result: ", resultObj)
+			// console.log(resultObj)
+
+			resultArray = JSON.parse(resultObj)
+
+			var selectedTasks = selection.tasks
+
+			resultArray.forEach((returnedTask, index) => {
+
+				//DEBUG: Log to console
+				// console.log("Index: ", index)
+				// console.log(JSON.stringify(returnedTask))
+				// for(var key in returnedTask) {
+					// console.log(key, ": ", returnedTask[key])
+				// }
+				// var OPTask = selectedTasks[index]
+				var allTasks = actual.rootTask.descendents()
+				var OPTask = allTasks.find(function(task){
+					return task.uniqueID === returnedTask["OPtaskID"]
+				})
+
+				if(OPTask)
+				{
+					if(OPTask.customValue("OmniFocusID") == returnedTask["OFtaskID"])
+						OPTask.setCustomValue("OmniFocusID", "")
+				}
+				else
+					console.log("task not found")
+			})
+		}, function(err){
+			// PROCESS SCRIPT ERROR
+			new Alert("SCRIPT ERROR", err.errorMessage).show()
+			console.error(err.errorMessage)
+		})
+
+	});
+
+	action.validate = function(selection, sender){
+		// validation code
+		return (actual.rootTask.descendents().length > 0)
+	};
+	
+	return action;
+})();
