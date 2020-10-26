@@ -1,5 +1,7 @@
 # OmniPlan OmniFocus Task Sync
 
+[https://github.com/richm8080/OmniPlanFocusSync](https://github.com/richm8080/OmniPlanFocusSync)
+
 ## 1. Introduction
 
 These scripts enable tasks to be sent from OmniPlan to OmniFocus and subsequently kept in sync.
