@@ -90,9 +90,9 @@
 				//DEBUG: Log to console
 				// console.log("Index: ", index)
 				// console.log(JSON.stringify(returnedTask))
-				for(var key in returnedTask) {
-					console.log(key, ": ", returnedTask[key])
-				}
+				// for(var key in returnedTask) {
+				// 	console.log(key, ": ", returnedTask[key])
+				// }
 
 				var allTasks = actual.rootTask.descendents()
 				var OPTask = allTasks.find(function(task){
