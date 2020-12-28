@@ -58,7 +58,7 @@
 					var OFtask = Task.byIdentifier(task["OFtaskID"])
 					if(OFtask)
 					{
-						OFtask.title = task["OPtaskTitle"]
+						OFtask.name = task["OPtaskTitle"]
 						if(task["OPtaskDueDate"])
 							OFtask.dueDate = new Date(task["OPtaskDueDate"])
 						if(task["OPtaskDeferDate"])
@@ -104,7 +104,7 @@
 
 			resultArray = JSON.parse(resultObj)
 
-			var selectedTasks = selection.tasks
+			// var selectedTasks = selection.tasks
 
 			resultArray.forEach((returnedTask, index) => {
 
