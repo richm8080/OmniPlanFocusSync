@@ -47,6 +47,7 @@
 					{
 						var OFTaskExists = true
 						var OFTaskCompleted = OFtask.completed
+						var OFTaskName = OFtask.name
 					}
 					else
 					{
@@ -57,7 +58,8 @@
 							"OPtaskID": task["OPtaskID"],
 							"OFtaskID": task["OFtaskID"],
 							"OFTaskExists": OFTaskExists,
-							"OFTaskCompleted": OFTaskCompleted
+							"OFTaskCompleted": OFTaskCompleted,
+							"OFTaskName": OFTaskName
 						}
 						returnTaskData.push(returnTask)
 				})
@@ -108,6 +110,7 @@
 					}
 					else
 					{
+						OPTask.title = returnedTask['OFTaskName']
 						if(returnedTask['OFTaskCompleted'])
 						{
 							OPTask.effortDone = OPTask.effort
