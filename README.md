@@ -66,7 +66,7 @@ The note in OmniPlan will also have a hyperlink appended to enable click through
 
 This option will send a list of tasks from OmniPlan to OmniFocus where there is an OmniFocusID set on the task in OmniPlan.
 
-OmniFocus will loop through the list of OmniFocusIDs, where the ID is valid, it will return the completion status of the task in OmniFocus which in turn will set in OmniPlan.
+OmniFocus will loop through the list of OmniFocusIDs, where the ID is valid, it will return the completion status and current task name of the task in OmniFocus which in turn will set in OmniPlan.
 
 ---
 
