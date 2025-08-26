@@ -22,14 +22,15 @@
 		actual.rootTask.descendents().forEach(function(OPtask){
 			
 			var OFtaskID = OPtask.customValue("OmniFocusID")
+			var OFdropped = OPtask.customValue("OFTaskDropped")
 			// Only update tasks with an OFID
-			if(OFtaskID)
+			if(OFtaskID && OFdropped != 'yes')
 			{
 				var OPtaskComplete = (OPtask.effortDone/OPtask.effort)==1
 				var OPtaskTitle = OPtask.title
 				var OPtaskID = OPtask.uniqueID
 				var OPtaskDueDate = OPtask.endDate
-				var OPtaskDeferDate = OPtask.startNoEarlierThanDate
+				var OPtaskDeferDate = OPtask.startDate
 
 				// CREATE TASK DATA OBJECT
 				var task = {
@@ -62,7 +63,8 @@
 						if(task["OPtaskDueDate"])
 							OFtask.dueDate = new Date(task["OPtaskDueDate"])
 						if(task["OPtaskDeferDate"])
-							OFtask.deferDate = new Date(task["OPtaskDeferDate"])
+							// OFtask.deferDate = new Date(task["OPtaskDeferDate"])
+							OFtask.plannedDate = new Date(task["OPtaskDeferDate"])
 
 						if(task["OPcompletion"])
 							OFtask.markComplete()

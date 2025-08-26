@@ -47,6 +47,7 @@
 					{
 						var OFTaskExists = true
 						var OFTaskCompleted = OFtask.completed
+						var OFTaskDropDate = JSON.stringify(OFtask.dropDate)
 						var OFTaskName = OFtask.name
 					}
 					else
@@ -59,6 +60,7 @@
 							"OFtaskID": task["OFtaskID"],
 							"OFTaskExists": OFTaskExists,
 							"OFTaskCompleted": OFTaskCompleted,
+							"OFTaskDropDate": OFTaskDropDate,
 							"OFTaskName": OFTaskName
 						}
 						returnTaskData.push(returnTask)
@@ -93,7 +95,7 @@
 				// console.log("Index: ", index)
 				// console.log(JSON.stringify(returnedTask))
 				// for(var key in returnedTask) {
-				// 	console.log(key, ": ", returnedTask[key])
+					// console.log(key, ": ", returnedTask[key])
 				// }
 
 				var allTasks = actual.rootTask.descendents()
@@ -118,6 +120,17 @@
 						else
 						{
 							OPTask.effortDone = 0
+						}
+						var dropDate = JSON.parse(returnedTask['OFTaskDropDate'])
+						if(dropDate)
+						{
+							
+							console.log(dropDate)
+							console.log(returnedTask['OFTaskDropDate'])
+							OPTask.manualEndDate = new Date(dropDate)
+							OPTask.setCustomValue("OFTaskDropped", "yes")
+							OPTask.effortDone = OPTask.effort
+							
 						}
 					}
 				}

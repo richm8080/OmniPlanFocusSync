@@ -39,7 +39,7 @@
 				}
 				var OPtaskDueDate = OPtask.endDate
 				// OPtaskDueDate = (OPtaskDueDate != null) ? OPtaskDueDate : today
-				var OPtaskDeferDate = OPtask.startNoEarlierThanDate
+				var OPtaskDeferDate = OPtask.startDate
 
 				// CREATE TASK DATA OBJECT
 				var task = {
@@ -73,7 +73,8 @@
 					if(task["OPtaskDueDate"])
 						OFtask.dueDate = new Date(task["OPtaskDueDate"])
 					if(task["OPtaskDeferDate"])
-						OFtask.deferDate = new Date(task["OPtaskDeferDate"])
+						// OFtask.deferDate = new Date(task["OPtaskDeferDate"])
+						OFtask.plannedDate = new Date(task["OPtaskDeferDate"])
 					if(task["OPcompletion"])
 						OFtask.markComplete()
 					else
