@@ -63,8 +63,8 @@
 						if(task["OPtaskDueDate"])
 							OFtask.dueDate = new Date(task["OPtaskDueDate"])
 						if(task["OPtaskDeferDate"])
-							// OFtask.deferDate = new Date(task["OPtaskDeferDate"])
-							OFtask.plannedDate = new Date(task["OPtaskDeferDate"])
+							OFtask.deferDate = new Date(task["OPtaskDeferDate"])
+							OFtask.plannedDate = new Date(task["OPtaskStartDate"])
 
 						if(task["OPcompletion"])
 							OFtask.markComplete()

@@ -6,6 +6,8 @@ These scripts enable tasks to be sent from OmniPlan to OmniFocus and subsequentl
 
 The scripts utilise the OmniAutomation API provided in the PRO versions of OmniPlan 4 and OmniFocus 3.
 
+**🚨 WARNING: The latest updated introduced on 26th August require OmniFocus 4.7 or above to be installed on all your syncing devices, and the database migration must have been performed. The updates to the scripts make use of the new planned date functionality introduced in 4.7**
+
 ## 2. Credits
 
 The scripts are inspired by (but completely unrelated to) both:
@@ -53,10 +55,11 @@ The data fields copied are as follows:
 | OmniPlan | OmniFocus | Notes |
 | ------------- | ------------- | ------------- |
 | Project Name | Tag | A tag will be created with the project name under a parent tag 'OmniPlan', these will be created if they do not already exist. |
-| Task Name | Task Title | |
+| Task Name | Task Title | The task title in OF will be populated with the task name in OP. |
 | Task Note | Task Note | A hyperlink will be appended to the note field in both OmniFocus and OmniPlan allowing you to click through to see the corresponding item in the other application. |
-| Task End Date | Task Due Date | This copies over with the precise date and time as set in OmniPlan as the due date and time in OmniFocus |
-| Task Start No Earlier Than Date | Task Defer Date | The defer date and time will only be set if there is a 'Start No Earlier Than' constraint on the task |
+| Task End Date | Task Due Date | This copies over with the precise date and time as set in OmniPlan as the due date and time in OmniFocus. |
+| Task Start No Earlier Than Date | Task Defer Date | The defer date and time will only be set if there is a 'Start No Earlier Than' constraint on the task. |
+| Task Start Date | Task Planned Date | The planned date in OF will be set to the task start date in OP. |
 
 On successful completion, OmniFocus will then return the OmniFocusIDs for each of the tasks to OmniPlan where this field will be created if it doesn't already exist and each task transferred will have its OmniFocusID set.
 
@@ -93,6 +96,7 @@ OmniFocus will loop through the list of OmniFocusIDs, where the ID is valid, it 
 * Task Due Date
 * Task Defer Date
 * Task Completion
+* Task Planned Date
 
 (see table in 4.1 for details of what will be set on these fields)
 
