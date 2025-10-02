@@ -6,7 +6,7 @@ These scripts enable tasks to be sent from OmniPlan to OmniFocus and subsequentl
 
 The scripts utilise the OmniAutomation API provided in the PRO versions of OmniPlan 4 and OmniFocus 3.
 
-**🚨 WARNING: The latest updated introduced on 26th August require OmniFocus 4.7 or above to be installed on all your syncing devices, and the database migration must have been performed. The updates to the scripts make use of the new planned date functionality introduced in 4.7**
+**🚨 WARNING: The latest update introduced on 26th August require OmniFocus 4.7 or above to be installed on all your syncing devices, and the database migration must have been performed. The updates to the scripts make use of the new planned date functionality introduced in 4.7**
 
 ## 2. Credits
 
