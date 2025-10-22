@@ -3,7 +3,7 @@
 	"targets": ["omniplan"],
 	"author": "richm8080",
 	"identifier": "com.richm8080.op.pushupdatestoomnifocus",
-	"version": "1.0",
+	"version": "1.1",
 	"description": "This action will update tasks in OmniFocus based on data from OmniPlan where the OmniFocusID is set in OmniPlan.",
 	"label": "Push Updates to OmniFocus",
 	"shortLabel": "Update OmniFocus (push)"
@@ -30,7 +30,8 @@
 				var OPtaskTitle = OPtask.title
 				var OPtaskID = OPtask.uniqueID
 				var OPtaskDueDate = OPtask.endDate
-				var OPtaskDeferDate = OPtask.startDate
+				var OPtaskDeferDate = OPtask.startNoEarlierThanDate
+				var OPtaskStartDate = OPtask.startDate
 
 				// CREATE TASK DATA OBJECT
 				var task = {
@@ -39,6 +40,7 @@
 					"OPtaskTitle":OPtaskTitle,
 					"OPtaskDueDate":OPtaskDueDate,
 					"OPtaskDeferDate": OPtaskDeferDate,
+					"OPtaskStartDate": OPtaskStartDate,
 					"OPcompletion":OPtaskComplete
 				}
 				tasksToSend.push(task)
@@ -64,6 +66,9 @@
 							OFtask.dueDate = new Date(task["OPtaskDueDate"])
 						if(task["OPtaskDeferDate"])
 							OFtask.deferDate = new Date(task["OPtaskDeferDate"])
+						else
+							OFtask.deferDate = null
+						if(task["OPtaskStartDate"])
 							OFtask.plannedDate = new Date(task["OPtaskStartDate"])
 
 						if(task["OPcompletion"])

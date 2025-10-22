@@ -3,7 +3,7 @@
 	"targets": ["omniplan"],
 	"author": "richm8080",
 	"identifier": "com.richm8080.op.sendselectedtoomnifocus",
-	"version": "1.0",
+	"version": "1.1",
 	"description": "This action will create copies of the selected incomplete lowest level OmniPlan tasks in OmniFocus. (Groups, Milestones & Hammock tasks will not be copied)",
 	"label": "Copy Selected Tasks to OmniFocus",
 	"shortLabel": "Copy Selected to OmniFocus"
@@ -39,7 +39,8 @@
 				}
 				var OPtaskDueDate = OPtask.endDate
 				// OPtaskDueDate = (OPtaskDueDate != null) ? OPtaskDueDate : today
-				var OPtaskDeferDate = OPtask.startDate
+				var OPtaskDeferDate = OPtask.startNoEarlierThanDate
+				var OPtaskStartDate = OPtask.startDate
 
 				// CREATE TASK DATA OBJECT
 				var task = {
@@ -72,10 +73,13 @@
 					OFtaskID = OFtask.id.primaryKey
 					OFtask.note = task["OPtaskNote"]
 					if(task["OPtaskDueDate"])
-						OFtask.dueDate = new Date(task["OPtaskDueDate"])
+							OFtask.dueDate = new Date(task["OPtaskDueDate"])
 					if(task["OPtaskDeferDate"])
 						OFtask.deferDate = new Date(task["OPtaskDeferDate"])
+					if(task["OPtaskStartDate"])
 						OFtask.plannedDate = new Date(task["OPtaskStartDate"])
+					else
+						OFtask.deferDate = null
 					if(task["OPcompletion"])
 						OFtask.markComplete()
 					else

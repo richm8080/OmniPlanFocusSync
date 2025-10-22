@@ -3,7 +3,7 @@
 	"targets": ["omniplan"],
 	"author": "richm8080",
 	"identifier": "com.richm8080.op.pullupdatesfromomnifocus",
-	"version": "1.0",
+	"version": "1.1",
 	"description": "This action will update tasks in OmniPlan based on data from OmniFocus where the OmniFocusID is set in OmniPlan.",
 	"label": "Pull Updates from OmniFocus",
 	"shortLabel": "Update OmniPlan (pull)"
